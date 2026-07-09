@@ -1,16 +1,19 @@
 #!/bin/bash
 set -euo pipefail
 
-# Install skills into the directory Claude Code reads from (~/.claude/skills),
-# so every session in this environment can use them. Two sources:
+# Install skills and subagents into the directories Claude Code reads from
+# (~/.claude/skills and ~/.claude/agents), so every session in this environment
+# can use them. Sources:
 #   1. Skills committed in this repo, under skills/
 #   2. Skills from external git repos listed in EXTERNAL_SKILL_REPOS
+#   3. Subagents (.md persona files) from repos listed in EXTERNAL_AGENT_REPOS
 #
-# Runs synchronously on SessionStart so the skills are in place before the
+# Runs synchronously on SessionStart so everything is in place before the
 # agent loop starts. Idempotent: safe to re-run.
 
 REPO_DIR="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 SKILLS_DEST="$HOME/.claude/skills"
+AGENTS_DEST="$HOME/.claude/agents"
 CACHE_DIR="$HOME/.claude/skills-repos"
 
 # External skill repositories to pull skills from. Each entry: "<git-url> <subdir>"
@@ -21,7 +24,14 @@ EXTERNAL_SKILL_REPOS=(
   "https://github.com/obra/superpowers.git skills"
 )
 
-mkdir -p "$SKILLS_DEST"
+# External subagent repositories. Each entry: "<git-url> <subdir>" where <subdir>
+# is the path inside the repo under which agent .md files live (searched
+# recursively). Use "." for the repo root.
+EXTERNAL_AGENT_REPOS=(
+  "https://github.com/ECONOZIK/agency-agents.git ."
+)
+
+mkdir -p "$SKILLS_DEST" "$AGENTS_DEST"
 
 # copy_skills_from <dir>: copy each immediate subdirectory of <dir> that looks
 # like a skill (contains SKILL.md) into SKILLS_DEST.
@@ -67,4 +77,51 @@ for entry in "${EXTERNAL_SKILL_REPOS[@]}"; do
   echo "Installed $ext_count skill(s) from $name ($url)" >&2
 done
 
+# copy_agents_from <dir>: copy every .md file under <dir> (recursively) into
+# AGENTS_DEST, skipping repo docs. Files with a YAML frontmatter block are
+# treated as subagents.
+copy_agents_from() {
+  local src="$1"
+  local count=0
+  [ -d "$src" ] || { echo 0; return 0; }
+  while IFS= read -r -d '' file; do
+    local base
+    base="$(basename "$file")"
+    case "$base" in
+      README.md|CONTRIBUTING.md|SECURITY.md|LICENSE.md|CHANGELOG.md|CODE_OF_CONDUCT.md) continue ;;
+    esac
+    # Must start with a YAML frontmatter block to be a valid agent.
+    head -n1 "$file" | grep -q '^---' || continue
+    cp "$file" "$AGENTS_DEST/$base"
+    count=$((count + 1))
+  done < <(find "$src" -type f -name '*.md' \
+             -not -path '*/.git/*' \
+             -not -path '*/.github/*' \
+             -not -path '*/examples/*' \
+             -not -path '*/docs/*' -print0)
+  echo "$count"
+}
+
+# 3. External subagent repos.
+for entry in "${EXTERNAL_AGENT_REPOS[@]}"; do
+  url="${entry%% *}"
+  subdir="${entry#* }"
+  [ "$subdir" = "$url" ] && subdir="."
+  name="$(basename "$url" .git)"
+  dest="$CACHE_DIR/$name"
+
+  if [ -d "$dest/.git" ]; then
+    git -C "$dest" pull --ff-only --quiet || echo "Warning: could not update $name" >&2
+  else
+    if ! git clone --depth 1 --quiet "$url" "$dest"; then
+      echo "Warning: could not clone $url, skipping." >&2
+      continue
+    fi
+  fi
+
+  agent_count="$(copy_agents_from "$dest/$subdir")"
+  echo "Installed $agent_count agent(s) from $name ($url)" >&2
+done
+
 echo "Skills ready in $SKILLS_DEST" >&2
+echo "Agents ready in $AGENTS_DEST" >&2

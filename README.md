@@ -42,6 +42,19 @@ EXTERNAL_SKILL_REPOS=(
 External repos are cached in `~/.claude/skills-repos/` and only skill
 directories containing a `SKILL.md` are installed.
 
+## Subagent repos
+
+The hook can also install subagent persona files (`.md` with YAML frontmatter)
+into `~/.claude/agents/`. Add entries to `EXTERNAL_AGENT_REPOS` in the hook,
+each `"<git-url> <subdir>"` (use `.` for the repo root — `.md` files are found
+recursively, skipping `docs/`, `examples/`, and repo docs like `README.md`):
+
+```bash
+EXTERNAL_AGENT_REPOS=(
+  "https://github.com/ECONOZIK/agency-agents.git ."
+)
+```
+
 ## Using it as an environment
 
 Point a Claude Code on the web environment at this repository (or its default

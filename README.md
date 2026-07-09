@@ -34,6 +34,7 @@ the skill directories:
 ```bash
 EXTERNAL_SKILL_REPOS=(
   "https://github.com/juliusbrussee/caveman.git skills"
+  "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git .claude/skills"
 )
 ```
 

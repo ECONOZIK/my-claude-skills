@@ -17,6 +17,7 @@ CACHE_DIR="$HOME/.claude/skills-repos"
 # where <subdir> is the path inside the repo that holds the skill directories.
 EXTERNAL_SKILL_REPOS=(
   "https://github.com/juliusbrussee/caveman.git skills"
+  "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git .claude/skills"
 )
 
 mkdir -p "$SKILLS_DEST"

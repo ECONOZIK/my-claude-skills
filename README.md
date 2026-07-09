@@ -24,6 +24,22 @@ starts against this repo, a `SessionStart` hook installs every skill under
 2. Add YAML frontmatter with `name` and `description`.
 3. Commit and push. The next session installs it automatically.
 
+## External skill repos
+
+The hook can also pull skills from other git repositories. Edit the
+`EXTERNAL_SKILL_REPOS` array in `.claude/hooks/session-start.sh`. Each entry is
+`"<git-url> <subdir>"`, where `<subdir>` is the folder inside that repo holding
+the skill directories:
+
+```bash
+EXTERNAL_SKILL_REPOS=(
+  "https://github.com/juliusbrussee/caveman.git skills"
+)
+```
+
+External repos are cached in `~/.claude/skills-repos/` and only skill
+directories containing a `SKILL.md` are installed.
+
 ## Using it as an environment
 
 Point a Claude Code on the web environment at this repository (or its default

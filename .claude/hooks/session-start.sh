@@ -126,3 +126,26 @@ done
 
 echo "Skills ready in $SKILLS_DEST" >&2
 echo "Agents ready in $AGENTS_DEST" >&2
+
+# 4. Python tools (pip). Kept non-fatal: a failed install here must never break
+#    the session — skills and agents are already in place above.
+# Force a pip-managed cryptography first so packages that need a newer version
+# don't try to uninstall the debian-managed one (which fails).
+pip install --quiet --ignore-installed cryptography >/dev/null 2>&1 || true
+
+# crawl4ai (web -> LLM-ready markdown), from the ECONOZIK fork.
+if pip install --quiet "git+https://github.com/ECONOZIK/crawl4ai.git" >/dev/null 2>&1; then
+  echo "Installed crawl4ai" >&2
+else
+  echo "Warning: crawl4ai install failed (non-fatal)" >&2
+fi
+
+# graphify (codebase -> knowledge graph). Installs the pip package, then
+# registers its skill into ~/.claude/skills via the graphify CLI.
+if pip install --quiet graphifyy >/dev/null 2>&1; then
+  graphify install --platform claude >/dev/null 2>&1 \
+    && echo "Installed graphify" >&2 \
+    || echo "Warning: graphify skill registration failed (non-fatal)" >&2
+else
+  echo "Warning: graphifyy install failed (non-fatal)" >&2
+fi

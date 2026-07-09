@@ -56,6 +56,19 @@ EXTERNAL_AGENT_REPOS=(
 )
 ```
 
+## Python tools (pip)
+
+The hook also installs a few pip-based tools (non-fatally — a failed install
+never breaks the session), registering their skills where applicable:
+
+- **crawl4ai** — web → LLM-ready markdown (from the ECONOZIK fork)
+- **graphify** (`graphifyy`) — codebase → knowledge graph; registers a
+  `graphify` skill via `graphify install --platform claude`
+
+To add another pip tool, add a non-fatal install block in section 4 of the
+hook. Because the environment Setup script just runs this hook, you never need
+to touch it — commit and push.
+
 ## Using it as an environment
 
 Point a Claude Code on the web environment at this repository (or its default

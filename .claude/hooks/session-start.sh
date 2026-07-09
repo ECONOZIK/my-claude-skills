@@ -22,6 +22,7 @@ EXTERNAL_SKILL_REPOS=(
   "https://github.com/juliusbrussee/caveman.git skills"
   "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git .claude/skills"
   "https://github.com/obra/superpowers.git skills"
+  "https://github.com/DietrichGebert/ponytail.git skills"
 )
 
 # External subagent repositories. Each entry: "<git-url> <subdir>" where <subdir>

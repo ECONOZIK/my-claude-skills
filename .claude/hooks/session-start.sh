@@ -150,14 +150,3 @@ if pip install --quiet graphifyy >/dev/null 2>&1; then
 else
   echo "Warning: graphifyy install failed (non-fatal)" >&2
 fi
-
-# 6. MCP servers (non-fatal). Registered at user scope so every session and
-#    every repo in this environment gets them. Re-registering each session is
-#    required because the container is ephemeral.
-if command -v claude >/dev/null 2>&1; then
-  # task-master-ai: AI task management. Uses claude-code/* models (no API key).
-  claude mcp remove --scope user task-master-ai >/dev/null 2>&1 || true
-  claude mcp add --scope user task-master-ai -- npx -y task-master-ai >/dev/null 2>&1 \
-    && echo "Registered MCP: task-master-ai" >&2 \
-    || echo "Warning: task-master-ai MCP registration failed (non-fatal)" >&2
-fi

@@ -70,17 +70,6 @@ To add another pip tool, add a non-fatal install block in section 4 of the
 hook. Because the environment Setup script just runs this hook, you never need
 to touch it — commit and push.
 
-## MCP servers
-
-The hook registers MCP servers at **user scope** (so every session and repo
-gets them), re-running each session because the container is ephemeral:
-
-- **task-master-ai** — AI task management (`npx -y task-master-ai`). Works with
-  `claude-code/*` models, no API key needed.
-
-To add another MCP server, add a `claude mcp add --scope user ...` line in
-section 6 of the hook (idempotent: `remove` then `add`).
-
 ## Using it as an environment
 
 Point a Claude Code on the web environment at this repository (or its default
